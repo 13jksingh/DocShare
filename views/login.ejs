@@ -1,0 +1,9 @@
+<%- include('partials/head'); %>
+    <h1>Login</h1>
+    <form action="/login" method="post" enctype="multipart/form-data">
+        <input type="text" name="username" placeholder="Username">
+        <input type="password" name="password" placeholder="Password">
+        <input type="file" name="file">
+        <button type="submit">Login</button>
+    </form>
+<%- include('partials/footer'); %>
