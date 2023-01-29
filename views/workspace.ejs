@@ -1,4 +1,10 @@
-<%- include('partials/head'); %>
-    <% console.log(infile); %> 
-    <img src="<%= infile %>" alt="hi">
+<%- include('partials/head'); %> 
+    <% files.forEach(element => { %>
+        <a href="/workspace/<%=element.filename%>"><%= element.filename %></a>
+    <% }); %> 
+    <form action="/workspace" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <button type="submit">Upload</button>
+    </form>
+    <a href="/logout" role="button">Logout</a>
 <%- include('partials/footer'); %>
