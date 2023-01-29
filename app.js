@@ -22,7 +22,7 @@ app.use(express.static(__dirname + '/public'));
 mongoose.set('strictQuery',true);
 
 app.use(session({
-    secret: 'keyboard cat',
+    secret: process.env.BSECRET,
     resave: false,
     saveUninitialized: false,
 }));
