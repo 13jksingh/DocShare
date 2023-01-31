@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema({
     email: String,
     googleId:Number,
     fileAuthor:[mongoose.Schema.Types.ObjectId],
-    fileAcess:[String]
+    fileAcess:[mongoose.Schema.Types.ObjectId]
 });
 
 userSchema.plugin(passportLocalMongoose);
@@ -122,7 +122,7 @@ app.get("/workspace/:fileId",function(req,res){
         gfs.files.findOne({ filename: req.params.fileId }, function (err, file) {
             if (!err) {
                 const id = mongoose.Types.ObjectId(file._id);
-                if ((req.user.fileAuthor).includes(id)){
+                if ((req.user.fileAuthor).includes(id) || (req.user.fileAcess).includes(id)){
                     const readStream = gridfsBucket.openDownloadStream(file._id);
                     readStream.start();
                     readStream.pipe(res);
@@ -138,10 +138,14 @@ app.get("/workspace/:fileId",function(req,res){
 
 app.get("/workspace",function(req,res){
     if (req.isAuthenticated()) {
-        const ids = req.user.fileAuthor;
-        gfs.files.find({_id:{$in:ids}}).toArray((err, files) => {
-            res.render("workspace", { files: files });
+        const authorIds = req.user.fileAuthor;
+        const accessIds = req.user.fileAcess;
+        gfs.files.find({_id:{$in:authorIds}}).toArray((err, Author) => {
+            gfs.files.find({_id:{$in:accessIds}}).toArray((err, Access) => {
+                res.render("workspace", { authorFiles: Author,accessFiles:Access , username : req.user.username });
+            });
         });
+        
     }else{
         res.redirect("/login");
     } 
@@ -160,6 +164,61 @@ app.post("/workspace",upload.single('file'),function(req,res){
             })
         }else{
             console.log(err);
+        }
+    });
+    gfs.files.update({_id:req.file.id},{$set:{Author:req.user._id}});
+    res.redirect("/workspace");
+});
+
+app.post("/Access/:file",function(req,res){
+    console.log(req.body,req.params);
+    User.findOne({username:req.body.accessUser},function(err,doc){
+        if (!err){
+            if (doc){
+                gfs.files.updateOne({ _id: mongoose.Types.ObjectId(req.params.file)},{$push:{Access:doc._id}},function(err){
+                    if (err){
+                        console.log(err);
+                    }else{
+                        console.log("Access Given");
+                        User.updateOne({username:req.body.accessUser},{$addToSet:{fileAcess:mongoose.Types.ObjectId(req.params.file)}},function(e){
+                            if (e){
+                                console.log(e);
+                            }else{
+                                console.log("Done in user");
+                            }
+                        });
+                    }
+                });
+            }else{
+                console.log("Username does not exist");
+            }
+        }
+    })
+    res.redirect("/workspace");
+});
+
+app.post("/revoke/:user",function(req,res){
+    User.updateOne({_id:mongoose.Types.ObjectId(req.params.user)},{$pull:{fileAcess:mongoose.Types.ObjectId(req.body.revokefile)}},function(e){
+        if (!e){
+            console.log("Accesss Revoked from User DB");
+        }
+    });
+    gfs.files.updateOne({_id:mongoose.Types.ObjectId(req.body.revokefile)},{$pull:{Access:mongoose.Types.ObjectId(req.params.user)}} ,function(err){
+        if(!err){
+            console.log("Accesss Revoked from File DB");
+        }
+    });
+    res.redirect("/workspace");
+});
+
+app.post("/rename/:file",function(req,res){
+    const newName = req.body["rename-"+req.params.file];
+    // gfs.files.findOne({_id:mongoose.Types.ObjectId(req.params.file)},function(err,doc){
+    //     console.log(doc);
+    // })
+    gfs.files.updateOne({_id:mongoose.Types.ObjectId(req.params.file)}, {$set:{filename:newName}},function(err){
+        if (!err){
+            console.log("Renamed file");
         }
     });
     res.redirect("/workspace");
@@ -205,3 +264,5 @@ app.listen(3000,function(err){
         console.log("Listening on port 3000");
     }
 });
+
+

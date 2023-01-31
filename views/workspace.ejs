@@ -1,10 +1,67 @@
 <%- include('partials/head'); %> 
-    <% files.forEach(element => { %>
+    <h1><%=username %> </h1>
+    <h1>Author Files</h1>
+    <% authorFiles.forEach(element => { %>
+        <div>
         <a href="/workspace/<%=element.filename%>"><%= element.filename %></a>
+        <ul>
+            <li>
+                Manage Access
+                <form action="/Access/<%=element._id%>" method="post">
+                    <input type="text" name="accessUser" placeholder="Username">
+                    <button type="submit">Give Access</button>
+                </form>
+                <% if (element.Access){ %>
+                    <% element.Access.forEach(u=> { %>
+                        <li>
+                            <form action="/revoke/<%=u%>" method="post">
+                                <%=u%>
+                                <button type="submit" name="revokefile" value="<%=element._id%>">Revoke</button>
+                            </form>
+                        </li>
+                        <% }); %>
+                </ul>  
+                <% }%>
+                <ul>   
+            </li>
+            <li>
+                Delete Doc
+            </li>
+            <li>
+                <form action="/rename/<%=element._id%>" method="post">
+                    <button onclick="rename('<%=element._id%>')">Rename</button>
+                    <input type="hidden" name="rename-<%=element._id%>" value="" id="">
+                </form>
+            </li>
+        </ul>
+        </div>
     <% }); %> 
+
+    <h1>Access Files</h1>
+    <% accessFiles.forEach(element => { %>
+        <div>
+        <a href="/workspace/<%=element.filename%>"><%= element.filename %></a>
+        <ul>
+            <li>
+                Access Given By <%=element.Author%>
+            </li>
+        </ul>
+        </div>
+    <% }); %> 
+
+
     <form action="/workspace" method="post" enctype="multipart/form-data">
         <input type="file" name="file">
         <button type="submit">Upload</button>
     </form>
     <a href="/logout" role="button">Logout</a>
 <%- include('partials/footer'); %>
+
+<script>
+    function rename(fileId){
+        var newName = prompt("Enter New Name");
+        const filename = 'rename-'+fileId;
+        var renameSelector = document.getElementsByName(filename);
+        $(renameSelector).val(newName);
+    }
+</script>
