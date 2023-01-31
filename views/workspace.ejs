@@ -25,7 +25,9 @@
                 <ul>   
             </li>
             <li>
-                Delete Doc
+                <form action="/delete/<%=element._id%>" method="post">
+                    <button type="submit">Delete</button>
+                </form>
             </li>
             <li>
                 <form action="/rename/<%=element._id%>" method="post">

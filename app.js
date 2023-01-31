@@ -213,14 +213,22 @@ app.post("/revoke/:user",function(req,res){
 
 app.post("/rename/:file",function(req,res){
     const newName = req.body["rename-"+req.params.file];
-    // gfs.files.findOne({_id:mongoose.Types.ObjectId(req.params.file)},function(err,doc){
-    //     console.log(doc);
-    // })
     gfs.files.updateOne({_id:mongoose.Types.ObjectId(req.params.file)}, {$set:{filename:newName}},function(err){
         if (!err){
             console.log("Renamed file");
         }
     });
+    res.redirect("/workspace");
+});
+
+app.post("/delete/:file",function(req,res){
+    gridfsBucket.delete(mongoose.Types.ObjectId(req.params.file),function(err){
+        if(err){
+            console.log(err);
+        }else{
+            console.log("Deleted");
+        }
+    })
     res.redirect("/workspace");
 });
 
@@ -233,6 +241,7 @@ app.get("/logout",function(req,res){
         }
     });
 });
+
 
 app.post("/register",function(req,res){
     User.register({username:req.body.username},req.body.password,function(err,user){
