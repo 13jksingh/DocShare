@@ -3,7 +3,7 @@
     <h1>Author Files</h1>
     <% authorFiles.forEach(element => { %>
         <div>
-        <a href="/workspace/<%=element.filename%>"><%= element.filename %></a>
+        <a href="/workspace/<%=element._id%>"><%= element.filename %></a>
         <ul>
             <li>
                 Manage Access
@@ -42,7 +42,7 @@
     <h1>Access Files</h1>
     <% accessFiles.forEach(element => { %>
         <div>
-        <a href="/workspace/<%=element.filename%>"><%= element.filename %></a>
+        <a href="/workspace/<%=element._id%>"><%= element.filename %></a>
         <ul>
             <li>
                 Access Given By <%=element.Author%>

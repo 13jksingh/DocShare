@@ -119,11 +119,12 @@ app.post("/login",function(req,res){
 });
 app.get("/workspace/:fileId",function(req,res){
     if (req.isAuthenticated()) {
-        gfs.files.findOne({ filename: req.params.fileId }, function (err, file) {
+        gfs.files.findOne({ _id: mongoose.Types.ObjectId(req.params.fileId) }, function (err, file) {
             if (!err) {
-                const id = mongoose.Types.ObjectId(file._id);
+                // const id = mongoose.Types.ObjectId(file._id);
+                const id = file._id;
                 if ((req.user.fileAuthor).includes(id) || (req.user.fileAcess).includes(id)){
-                    const readStream = gridfsBucket.openDownloadStream(file._id);
+                    const readStream = gridfsBucket.openDownloadStream(id);
                     readStream.start();
                     readStream.pipe(res);
                 }else{
@@ -212,12 +213,25 @@ app.post("/revoke/:user",function(req,res){
 });
 
 app.post("/rename/:file",function(req,res){
-    const newName = req.body["rename-"+req.params.file];
-    gfs.files.updateOne({_id:mongoose.Types.ObjectId(req.params.file)}, {$set:{filename:newName}},function(err){
-        if (!err){
-            console.log("Renamed file");
-        }
-    });
+    if (req.isAuthenticated()) {
+        gfs.files.findOne({ _id: mongoose.Types.ObjectId(req.params.file) }, function (err, file) {
+            if (!err) {
+                const id = mongoose.Types.ObjectId(file._id);
+                if ((req.user.fileAuthor).includes(id)) {
+                    const newName = req.body["rename-" + req.params.file];
+                    gfs.files.updateOne({ _id: mongoose.Types.ObjectId(req.params.file) }, { $set: { filename: newName } }, function (err) {
+                        if (!err) {
+                            console.log("Renamed file");
+                        }
+                    });
+                }else{
+                    res.send("Not Accessable");
+                }
+            }
+        })   
+    }else{
+        res.redirect("/login");
+    } 
     res.redirect("/workspace");
 });
 
