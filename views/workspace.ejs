@@ -3,6 +3,7 @@
     <h1>Author Files</h1>
     <% authorFiles.forEach(element => { %>
         <div>
+        <img src="/workspace/<%=element._id%>" alt="" height="50px"><br>
         <a href="/workspace/<%=element._id%>"><%= element.filename %></a>
         <ul>
             <li>
@@ -42,6 +43,7 @@
     <h1>Access Files</h1>
     <% accessFiles.forEach(element => { %>
         <div>
+        <img src="/workspace/<%=element._id%>" alt="" height="50px"><br>
         <a href="/workspace/<%=element._id%>"><%= element.filename %></a>
         <ul>
             <li>

@@ -241,6 +241,11 @@ app.post("/delete/:file",function(req,res){
             console.log(err);
         }else{
             console.log("Deleted");
+            User.updateOne({_id:req.user._id},{$pull:{fileAuthor:mongoose.Types.ObjectId(req.params.file)}},function(e){
+                if (!e){
+                    console.log("Deleted from User DB");
+                }
+            });
         }
     })
     res.redirect("/workspace");
